@@ -30,6 +30,10 @@ export function formatDate(
 /**
  * Format a date to relative time (e.g., "2 hours ago")
  */
+export function formatDistanceToNow(dateString: string): string {
+  return formatRelativeTime(dateString);
+}
+
 export function formatRelativeTime(dateString: string): string {
   try {
     const date = new Date(dateString);

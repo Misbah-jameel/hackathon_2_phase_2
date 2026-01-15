@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasksWithActivity } from '@/hooks/useTasksWithActivity';
 import { TaskList } from '@/components/tasks/TaskList';
 import { TaskFormModal } from '@/components/tasks/TaskFormModal';
 import { TaskFilters } from '@/components/tasks/TaskFilters';
@@ -22,7 +22,8 @@ export default function TasksPage() {
     addTask,
     editTask,
     fetchTasks,
-  } = useTasks();
+    trackTaskView,
+  } = useTasksWithActivity();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -33,6 +34,7 @@ export default function TasksPage() {
   };
 
   const handleEditTask = (task: Task) => {
+    trackTaskView(task.id);
     setEditingTask(task);
     setIsFormOpen(true);
   };

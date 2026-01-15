@@ -24,7 +24,7 @@ export const ROUTES = {
   SIGNUP: '/signup',
 
   // Protected
-  DASHBOARD: '/tasks',
+  DASHBOARD: '/dashboard',
   TASKS: '/tasks',
 } as const;
 

@@ -50,6 +50,34 @@ export function Header() {
             ) : isAuthenticated ? (
               <>
                 <Link
+                  href={ROUTES.DASHBOARD}
+                  className={cn(
+                    'text-sm font-medium transition-colors px-3 py-2 rounded-lg min-h-[44px] flex items-center gap-2',
+                    isActive(ROUTES.DASHBOARD)
+                      ? 'text-primary bg-primary/10'
+                      : 'text-gray-primary dark:text-gray-300 hover:text-primary hover:bg-primary/5'
+                  )}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="7" height="9" />
+                    <rect x="14" y="3" width="7" height="5" />
+                    <rect x="14" y="12" width="7" height="9" />
+                    <rect x="3" y="16" width="7" height="5" />
+                  </svg>
+                  Dashboard
+                </Link>
+                <Link
                   href={ROUTES.TASKS}
                   className={cn(
                     'text-sm font-medium transition-colors px-3 py-2 rounded-lg min-h-[44px] flex items-center',

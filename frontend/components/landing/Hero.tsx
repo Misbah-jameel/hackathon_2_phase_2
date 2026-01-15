@@ -21,7 +21,7 @@ export function Hero() {
 
           {/* Headline */}
           <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight font-display'>
-            <span className='text-light-300 dark:text-white'>Manage Your Tasks with </span>
+            <span className='text-light-500 dark:text-white'>Manage Your Tasks with </span>
             <span className='gradient-text'>Style</span>
             <span className='text-4xl ml-2'>🎨</span>
           </h1>

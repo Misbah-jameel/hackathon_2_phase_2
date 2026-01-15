@@ -126,9 +126,48 @@ export function MobileNav({
                     </p>
                   </motion.div>
 
-                  {/* Tasks Link */}
+                  {/* Dashboard Link */}
                   <motion.div
                     custom={1}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <Link
+                      href={ROUTES.DASHBOARD}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors',
+                        'min-h-[48px]',
+                        isActive(ROUTES.DASHBOARD)
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-gray-primary dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-200'
+                      )}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="3" width="7" height="9" />
+                        <rect x="14" y="3" width="7" height="5" />
+                        <rect x="14" y="12" width="7" height="9" />
+                        <rect x="3" y="16" width="7" height="5" />
+                      </svg>
+                      Dashboard
+                    </Link>
+                  </motion.div>
+
+                  {/* Tasks Link */}
+                  <motion.div
+                    custom={2}
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
@@ -168,7 +207,7 @@ export function MobileNav({
 
                   {/* Logout */}
                   <motion.div
-                    custom={2}
+                    custom={3}
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"

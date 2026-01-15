@@ -121,3 +121,15 @@ export interface ToastProps {
   notification: Notification;
   onDismiss: (id: string) => void;
 }
+
+// ============ Task Activity ============
+export type TaskActivityType = 'created' | 'viewed' | 'edited' | 'deleted' | 'completed' | 'reopened';
+
+export interface TaskActivity {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  type: TaskActivityType;
+  timestamp: string; // ISO 8601
+  details?: string;
+}

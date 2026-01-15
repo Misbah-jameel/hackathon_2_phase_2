@@ -12,7 +12,7 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <Header />
-      <div className="flex-1 bg-gray-50">
+      <div className="flex-1 bg-gray-50 dark:bg-black">
         <div className="container mx-auto px-4 py-8">
           {children}
         </div>
