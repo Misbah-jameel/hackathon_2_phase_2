@@ -26,6 +26,7 @@ import type {
   SignupInput,
   AuthResponse,
   ApiResult,
+  ChatbotResponse,
 } from '@/types';
 
 // Enable mock mode for development without backend
@@ -223,6 +224,88 @@ export async function toggleTask(id: string): Promise<ApiResult<Task>> {
   return fetchApi<Task>(API_ENDPOINTS.TASK_TOGGLE(id), {
     method: 'PATCH',
   });
+}
+
+// ============ Chatbot API ============
+export async function sendChatMessage(message: string): Promise<ApiResult<ChatbotResponse>> {
+  if (USE_MOCK_API) {
+    // Mock chatbot response for development
+    return mockChatbotResponse(message);
+  }
+  return fetchApi<ChatbotResponse>(API_ENDPOINTS.CHATBOT, {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  });
+}
+
+// Mock chatbot response for development
+function mockChatbotResponse(message: string): Promise<ApiResult<ChatbotResponse>> {
+  const lowerMessage = message.toLowerCase();
+
+  let response: ChatbotResponse;
+
+  if (lowerMessage.includes('help') || lowerMessage === '?') {
+    response = {
+      message: `I can help you manage your tasks! Try these commands:
+
+**Add tasks:**
+- "Add task: Buy groceries"
+- "Create: Review documents"
+
+**View tasks:**
+- "Show my tasks"
+- "Show pending tasks"
+
+**Complete tasks:**
+- "Complete: Buy groceries"
+
+**Delete tasks:**
+- "Delete: Old task"`,
+      intent: 'help',
+      success: true,
+      suggestions: ['Show my tasks', 'Add task: ', 'Help'],
+    };
+  } else if (lowerMessage.includes('add') || lowerMessage.includes('create')) {
+    const taskMatch = message.match(/(?:add|create)(?:\s+task)?[:\s]+(.+)/i);
+    const taskTitle = taskMatch && taskMatch[1] ? taskMatch[1].trim() : 'New Task';
+    response = {
+      message: `Task '${taskTitle}' created! (Mock mode)`,
+      intent: 'add',
+      success: true,
+      data: { id: Date.now().toString(), title: taskTitle, completed: false },
+      suggestions: ['Show my tasks', 'Add another task'],
+    };
+  } else if (lowerMessage.includes('show') || lowerMessage.includes('list') || lowerMessage.includes('my tasks')) {
+    response = {
+      message: 'In mock mode, tasks are managed locally. Check the Tasks page to see your tasks.',
+      intent: 'list',
+      success: true,
+      suggestions: ['Add task: ', 'Help'],
+    };
+  } else if (lowerMessage.includes('complete') || lowerMessage.includes('done')) {
+    response = {
+      message: 'To complete a task in mock mode, use the checkbox on the Tasks page.',
+      intent: 'complete',
+      success: true,
+      suggestions: ['Show my tasks', 'Add task: '],
+    };
+  } else if (lowerMessage.includes('delete') || lowerMessage.includes('remove')) {
+    response = {
+      message: 'To delete a task in mock mode, use the delete button on the Tasks page.',
+      intent: 'delete',
+      success: true,
+      suggestions: ['Show my tasks', 'Add task: '],
+    };
+  } else {
+    response = {
+      message: "I didn't understand that. Try 'Help' to see what I can do!",
+      intent: 'unknown',
+      success: false,
+      suggestions: ['Help', 'Show my tasks', 'Add task: '],
+    };
+  }
+
+  return Promise.resolve({ data: response });
 }
 
 // ============ Helper Functions ============

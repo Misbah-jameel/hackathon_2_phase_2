@@ -54,7 +54,7 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
           padding="none"
           className={cn(
             'group relative overflow-hidden',
-            task.completed && 'bg-gray-50'
+            task.completed && 'bg-gray-50 dark:bg-dark-200/50'
           )}
         >
           <div className="p-4">
@@ -159,7 +159,7 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleDeleteClick}
-                  className="min-w-[44px] min-h-[44px] p-2 sm:p-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                  className="min-w-[44px] min-h-[44px] p-2 sm:p-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
                   aria-label="Delete task"
                 >
                   <svg

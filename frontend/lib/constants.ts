@@ -14,6 +14,9 @@ export const API_ENDPOINTS = {
   TASKS: '/api/tasks',
   TASK: (id: string) => `/api/tasks/${id}`,
   TASK_TOGGLE: (id: string) => `/api/tasks/${id}/toggle`,
+
+  // Chatbot
+  CHATBOT: '/api/chatbot',
 } as const;
 
 // ============ Routes ============
