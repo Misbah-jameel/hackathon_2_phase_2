@@ -3,6 +3,7 @@
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ChatbotWidget } from '@/components/chatbot';
 
 export default function DashboardLayout({
   children,
@@ -18,6 +19,7 @@ export default function DashboardLayout({
         </div>
       </div>
       <Footer />
+      <ChatbotWidget />
     </AuthGuard>
   );
 }

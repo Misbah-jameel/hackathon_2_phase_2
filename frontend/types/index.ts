@@ -133,3 +133,23 @@ export interface TaskActivity {
   timestamp: string; // ISO 8601
   details?: string;
 }
+
+// ============ Chatbot ============
+export interface ChatbotMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: string;
+}
+
+export interface ChatbotRequest {
+  message: string;
+}
+
+export interface ChatbotResponse {
+  message: string;
+  intent: string;
+  success: boolean;
+  data?: unknown;
+  suggestions: string[];
+}

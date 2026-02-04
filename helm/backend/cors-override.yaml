@@ -1,0 +1,2 @@
+env:
+  CORS_ORIGINS: "http://127.0.0.1:52095,http://127.0.0.1:51978,http://localhost:3000,http://127.0.0.1:3000"
