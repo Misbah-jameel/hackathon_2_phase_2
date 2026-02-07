@@ -21,6 +21,7 @@ import type {
   Task,
   CreateTaskInput,
   UpdateTaskInput,
+  TaskQueryParams,
   User,
   LoginInput,
   SignupInput,
@@ -171,11 +172,30 @@ export async function getMe(): Promise<ApiResult<User>> {
 }
 
 // ============ Tasks API ============
-export async function getTasks(): Promise<ApiResult<Task[]>> {
+export async function getTasks(params?: TaskQueryParams): Promise<ApiResult<Task[]>> {
   if (USE_MOCK_API) {
     return mockGetTasks();
   }
-  return fetchApi<Task[]>(API_ENDPOINTS.TASKS);
+
+  // Build query string from params
+  let queryString = '';
+  if (params) {
+    const searchParams = new URLSearchParams();
+    if (params.search) searchParams.set('search', params.search);
+    if (params.priority) searchParams.set('priority', params.priority);
+    if (params.tags) searchParams.set('tags', params.tags);
+    if (params.status) searchParams.set('status', params.status);
+    if (params.due_before) searchParams.set('due_before', params.due_before);
+    if (params.due_after) searchParams.set('due_after', params.due_after);
+    if (params.sort_by) searchParams.set('sort_by', params.sort_by);
+    if (params.sort_order) searchParams.set('sort_order', params.sort_order);
+    if (params.page) searchParams.set('page', params.page.toString());
+    if (params.page_size) searchParams.set('page_size', params.page_size.toString());
+    const qs = searchParams.toString();
+    if (qs) queryString = '?' + qs;
+  }
+
+  return fetchApi<Task[]>(API_ENDPOINTS.TASKS + queryString);
 }
 
 export async function getTask(id: string): Promise<ApiResult<Task>> {

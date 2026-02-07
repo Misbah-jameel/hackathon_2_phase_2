@@ -1,0 +1,19 @@
+# Strimzi Kafka Operator Installation Guide
+# Install via Helm:
+#   helm repo add strimzi https://strimzi.io/charts/
+#   helm repo update
+#   kubectl create namespace kafka
+#   helm install strimzi-kafka-operator strimzi/strimzi-kafka-operator \
+#     --namespace kafka \
+#     --set watchNamespaces="{kafka}" \
+#     --set resources.requests.memory=256Mi \
+#     --set resources.requests.cpu=100m \
+#     --set resources.limits.memory=512Mi \
+#     --set resources.limits.cpu=250m
+#
+# After operator is running, apply kafka-cluster.yaml:
+#   kubectl apply -f helm/kafka/kafka-cluster.yaml
+#
+# Verify:
+#   kubectl get kafka -n kafka
+#   kubectl get kafkatopic -n kafka

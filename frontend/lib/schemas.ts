@@ -12,6 +12,11 @@ export const createTaskSchema = z.object({
     .max(1000, 'Description must be 1000 characters or less')
     .transform((s) => s.trim())
     .optional(),
+  priority: z.enum(['high', 'medium', 'low', 'none']).optional().default('none'),
+  tags: z.string().optional().default(''),
+  due_date: z.string().optional(),
+  reminder_minutes_before: z.number().min(1).max(10080).optional().default(15),
+  recurrence_pattern: z.enum(['daily', 'weekly', 'monthly', 'custom', '']).optional(),
 });
 
 export const updateTaskSchema = z.object({

@@ -7,6 +7,10 @@ export interface User {
 }
 
 // ============ Task ============
+export type TaskPriority = 'high' | 'medium' | 'low' | 'none';
+export type TaskSortBy = 'created_at' | 'updated_at' | 'due_date' | 'priority' | 'title';
+export type TaskSortOrder = 'asc' | 'desc';
+
 export interface Task {
   id: string;
   title: string;
@@ -15,17 +19,52 @@ export interface Task {
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
   userId: string;
+  // Phase V fields
+  priority: TaskPriority;
+  tags: string[];
+  dueDate: string | null; // ISO 8601
+  reminderAt: string | null; // ISO 8601
+  recurrencePattern: string | null;
+  recurrenceEnabled: boolean;
+  parentTaskId: string | null;
+  isOverdue: boolean;
 }
 
 export interface CreateTaskInput {
   title: string;
   description?: string;
+  priority?: TaskPriority;
+  tags?: string[];
+  due_date?: string;
+  reminder_minutes_before?: number;
+  recurrence_pattern?: string;
+  recurrence_cron?: string;
 }
 
 export interface UpdateTaskInput {
   title?: string;
   description?: string;
   completed?: boolean;
+  priority?: TaskPriority;
+  tags?: string[];
+  due_date?: string;
+  reminder_minutes_before?: number;
+  recurrence_pattern?: string;
+  recurrence_cron?: string;
+  recurrence_enabled?: boolean;
+}
+
+export interface TaskQueryParams {
+  search?: string;
+  priority?: string;
+  tags?: string;
+  status?: 'pending' | 'completed';
+  due_before?: string;
+  due_after?: string;
+  sort_by?: TaskSortBy;
+  sort_order?: TaskSortOrder;
+  page?: number;
+  page_size?: number;
 }
 
 // ============ Auth ============

@@ -1,0 +1,31 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub
+  namespace: todo-app
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      secretKeyRef:
+        name: kafka-secrets
+        key: brokers
+    - name: authType
+      value: "sasl"
+    - name: saslMechanism
+      value: "SCRAM-SHA-256"
+    - name: saslUsername
+      secretKeyRef:
+        name: kafka-secrets
+        key: username
+    - name: saslPassword
+      secretKeyRef:
+        name: kafka-secrets
+        key: password
+    - name: consumerGroup
+      value: "todo-backend-group"
+    - name: initialOffset
+      value: "newest"
+    - name: tls
+      value: "true"

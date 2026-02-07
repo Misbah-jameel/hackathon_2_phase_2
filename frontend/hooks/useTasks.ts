@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   getTasks,
@@ -21,33 +21,37 @@ import type {
   UpdateTaskInput,
   TaskFilter,
   TasksState,
+  TaskSortBy,
+  TaskSortOrder,
+  TaskQueryParams,
 } from '@/types';
 import { generateId } from '@/lib/utils';
 
 interface UseTasksReturn extends TasksState {
-  /** Fetch all tasks */
   fetchTasks: () => Promise<void>;
-  /** Create a new task */
   addTask: (input: CreateTaskInput) => Promise<boolean>;
-  /** Update an existing task */
   editTask: (id: string, input: UpdateTaskInput) => Promise<boolean>;
-  /** Delete a task */
   removeTask: (id: string) => Promise<boolean>;
-  /** Toggle task completion status */
   toggleTaskStatus: (id: string) => Promise<boolean>;
-  /** Set the current filter */
   setFilter: (filter: TaskFilter) => void;
-  /** Get filtered tasks */
   filteredTasks: Task[];
-  /** Task counts */
   counts: {
     total: number;
     pending: number;
     completed: number;
   };
+  // Phase V: Search, filter, sort state
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  priorityFilter: string;
+  setPriorityFilter: (priority: string) => void;
+  sortBy: TaskSortBy;
+  setSortBy: (sortBy: TaskSortBy) => void;
+  sortOrder: TaskSortOrder;
+  setSortOrder: (order: TaskSortOrder) => void;
+  clearFilters: () => void;
 }
 
-// Valid filter values
 const VALID_FILTERS: TaskFilter[] = ['all', 'pending', 'completed'];
 
 function isValidFilter(value: string | null): value is TaskFilter {
@@ -60,7 +64,6 @@ export function useTasks(): UseTasksReturn {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Get initial filter from URL or default to 'all'
   const urlFilter = searchParams.get('filter');
   const initialFilter: TaskFilter = isValidFilter(urlFilter) ? urlFilter : 'all';
 
@@ -71,7 +74,14 @@ export function useTasks(): UseTasksReturn {
     error: null,
   });
 
-  // Sync filter from URL when it changes externally (browser back/forward)
+  // Phase V: Advanced filter/sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [sortBy, setSortBy] = useState<TaskSortBy>('created_at');
+  const [sortOrder, setSortOrder] = useState<TaskSortOrder>('desc');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync filter from URL
   useEffect(() => {
     const urlFilterValue = searchParams.get('filter');
     const newFilter: TaskFilter = isValidFilter(urlFilterValue) ? urlFilterValue : 'all';
@@ -80,11 +90,25 @@ export function useTasks(): UseTasksReturn {
     }
   }, [searchParams, state.filter]);
 
-  // Fetch tasks on mount
+  // Build query params
+  const buildQueryParams = useCallback((): TaskQueryParams | undefined => {
+    const params: TaskQueryParams = {};
+    if (searchQuery) params.search = searchQuery;
+    if (priorityFilter) params.priority = priorityFilter;
+    if (state.filter === 'pending') params.status = 'pending';
+    if (state.filter === 'completed') params.status = 'completed';
+    if (sortBy !== 'created_at') params.sort_by = sortBy;
+    if (sortOrder !== 'desc') params.sort_order = sortOrder;
+
+    return Object.keys(params).length > 0 ? params : undefined;
+  }, [searchQuery, priorityFilter, state.filter, sortBy, sortOrder]);
+
+  // Fetch tasks
   const fetchTasks = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    const result = await getTasks();
+    const params = buildQueryParams();
+    const result = await getTasks(params);
 
     if (isApiError(result)) {
       setState((prev) => ({
@@ -101,16 +125,41 @@ export function useTasks(): UseTasksReturn {
       isLoading: false,
       error: null,
     }));
-  }, []);
+  }, [buildQueryParams]);
 
+  // Initial fetch
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
+  // Debounced search
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      // fetchTasks will be called by the useEffect on buildQueryParams change
+    }, 300);
+  }, []);
+
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setPriorityFilter('');
+    setSortBy('created_at');
+    setSortOrder('desc');
+    setState((prev) => ({ ...prev, filter: 'all' }));
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('filter');
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   // Add task with optimistic update
   const addTask = useCallback(
     async (input: CreateTaskInput): Promise<boolean> => {
-      // Create optimistic task
       const optimisticTask: Task = {
         id: generateId(),
         title: input.title,
@@ -119,9 +168,16 @@ export function useTasks(): UseTasksReturn {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         userId: 'optimistic',
+        priority: input.priority || 'none',
+        tags: input.tags || [],
+        dueDate: input.due_date || null,
+        reminderAt: null,
+        recurrencePattern: input.recurrence_pattern || null,
+        recurrenceEnabled: !!input.recurrence_pattern,
+        parentTaskId: null,
+        isOverdue: false,
       };
 
-      // Optimistically add to state
       setState((prev) => ({
         ...prev,
         tasks: [optimisticTask, ...prev.tasks],
@@ -130,7 +186,6 @@ export function useTasks(): UseTasksReturn {
       const result = await createTask(input);
 
       if (isApiError(result)) {
-        // Revert optimistic update
         setState((prev) => ({
           ...prev,
           tasks: prev.tasks.filter((t) => t.id !== optimisticTask.id),
@@ -139,7 +194,6 @@ export function useTasks(): UseTasksReturn {
         return false;
       }
 
-      // Replace optimistic task with real task
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.map((t) =>
@@ -153,23 +207,17 @@ export function useTasks(): UseTasksReturn {
     [success, showError]
   );
 
-  // Edit task with optimistic update
+  // Edit task
   const editTask = useCallback(
     async (id: string, input: UpdateTaskInput): Promise<boolean> => {
-      // Store original task for rollback
       const originalTask = state.tasks.find((t) => t.id === id);
       if (!originalTask) return false;
 
-      // Optimistically update
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.map((t) =>
           t.id === id
-            ? {
-                ...t,
-                ...input,
-                updatedAt: new Date().toISOString(),
-              }
+            ? { ...t, ...input, updatedAt: new Date().toISOString() }
             : t
         ),
       }));
@@ -177,7 +225,6 @@ export function useTasks(): UseTasksReturn {
       const result = await updateTask(id, input);
 
       if (isApiError(result)) {
-        // Revert optimistic update
         setState((prev) => ({
           ...prev,
           tasks: prev.tasks.map((t) => (t.id === id ? originalTask : t)),
@@ -186,7 +233,6 @@ export function useTasks(): UseTasksReturn {
         return false;
       }
 
-      // Update with server response
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.map((t) => (t.id === id ? result.data : t)),
@@ -198,14 +244,12 @@ export function useTasks(): UseTasksReturn {
     [state.tasks, success, showError]
   );
 
-  // Remove task with optimistic update
+  // Remove task
   const removeTask = useCallback(
     async (id: string): Promise<boolean> => {
-      // Store original task for rollback
       const originalTask = state.tasks.find((t) => t.id === id);
       if (!originalTask) return false;
 
-      // Optimistically remove
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.filter((t) => t.id !== id),
@@ -214,7 +258,6 @@ export function useTasks(): UseTasksReturn {
       const result = await deleteTask(id);
 
       if (isApiError(result)) {
-        // Revert optimistic update
         setState((prev) => ({
           ...prev,
           tasks: [...prev.tasks, originalTask].sort(
@@ -232,25 +275,19 @@ export function useTasks(): UseTasksReturn {
     [state.tasks, success, showError]
   );
 
-  // Toggle task completion with optimistic update
+  // Toggle task completion
   const toggleTaskStatus = useCallback(
     async (id: string): Promise<boolean> => {
-      // Store original task for rollback
       const originalTask = state.tasks.find((t) => t.id === id);
       if (!originalTask) return false;
 
       const newCompleted = !originalTask.completed;
 
-      // Optimistically toggle
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.map((t) =>
           t.id === id
-            ? {
-                ...t,
-                completed: newCompleted,
-                updatedAt: new Date().toISOString(),
-              }
+            ? { ...t, completed: newCompleted, updatedAt: new Date().toISOString() }
             : t
         ),
       }));
@@ -258,7 +295,6 @@ export function useTasks(): UseTasksReturn {
       const result = await toggleTask(id);
 
       if (isApiError(result)) {
-        // Revert optimistic update
         setState((prev) => ({
           ...prev,
           tasks: prev.tasks.map((t) => (t.id === id ? originalTask : t)),
@@ -267,7 +303,6 @@ export function useTasks(): UseTasksReturn {
         return false;
       }
 
-      // Update with server response
       setState((prev) => ({
         ...prev,
         tasks: prev.tasks.map((t) => (t.id === id ? result.data : t)),
@@ -287,7 +322,6 @@ export function useTasks(): UseTasksReturn {
   const setFilter = useCallback((filter: TaskFilter) => {
     setState((prev) => ({ ...prev, filter }));
 
-    // Update URL params
     const params = new URLSearchParams(searchParams.toString());
     if (filter === 'all') {
       params.delete('filter');
@@ -299,7 +333,7 @@ export function useTasks(): UseTasksReturn {
     router.replace(newUrl, { scroll: false });
   }, [pathname, router, searchParams]);
 
-  // Get filtered tasks
+  // Filtered tasks (client-side for status filter when using mock API)
   const filteredTasks = state.tasks.filter((task) => {
     switch (state.filter) {
       case 'pending':
@@ -311,7 +345,6 @@ export function useTasks(): UseTasksReturn {
     }
   });
 
-  // Calculate counts
   const counts = {
     total: state.tasks.length,
     pending: state.tasks.filter((t) => !t.completed).length,
@@ -328,5 +361,14 @@ export function useTasks(): UseTasksReturn {
     setFilter,
     filteredTasks,
     counts,
+    searchQuery,
+    setSearchQuery: handleSearchChange,
+    priorityFilter,
+    setPriorityFilter,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    clearFilters,
   };
 }

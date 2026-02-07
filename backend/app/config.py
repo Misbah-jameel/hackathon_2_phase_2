@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database - SQLite by default for easy local development
-    # For production, use: postgresql://user:pass@host/db
     database_url: str = "sqlite:///./todoapp.db"
 
     # JWT
@@ -37,6 +36,11 @@ class Settings(BaseSettings):
     # Anthropic AI Configuration
     anthropic_api_key: Optional[str] = None
     anthropic_model: str = "claude-3-haiku-20240307"
+
+    # Dapr Configuration
+    dapr_host: str = "localhost"
+    dapr_port: int = 3500
+    dapr_pubsub_name: str = "pubsub"
 
     @property
     def cors_origins_list(self) -> List[str]:

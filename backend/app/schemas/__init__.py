@@ -13,6 +13,8 @@ from .chatbot import (
     ChatbotRequest,
     ChatbotResponse,
 )
+from .filters import TaskQueryParams
+from .events import TaskEvent, EventType, AuditLogResponse
 
 __all__ = [
     "LoginInput",
@@ -24,4 +26,8 @@ __all__ = [
     "TaskResponse",
     "ChatbotRequest",
     "ChatbotResponse",
+    "TaskQueryParams",
+    "TaskEvent",
+    "EventType",
+    "AuditLogResponse",
 ]

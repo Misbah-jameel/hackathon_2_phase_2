@@ -1,0 +1,23 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: todo-config
+spec:
+  tracing:
+    samplingRate: "1"
+  metric:
+    enabled: true
+  api:
+    allowed:
+      - name: publish
+        version: v1.0
+        protocol: http
+      - name: state
+        version: v1.0
+        protocol: http
+      - name: secrets
+        version: v1.0
+        protocol: http
+      - name: invoke
+        version: v1.0
+        protocol: http

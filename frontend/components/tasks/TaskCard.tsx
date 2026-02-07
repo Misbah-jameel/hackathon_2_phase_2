@@ -102,14 +102,35 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h3
-                  className={cn(
-                    'font-medium text-gray-primary transition-all duration-200',
-                    task.completed && 'line-through text-gray-secondary'
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3
+                    className={cn(
+                      'font-medium text-gray-primary transition-all duration-200',
+                      task.completed && 'line-through text-gray-secondary'
+                    )}
+                  >
+                    {task.title}
+                  </h3>
+                  {/* Priority Badge */}
+                  {task.priority && task.priority !== 'none' && (
+                    <span
+                      className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                        task.priority === 'high' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                        task.priority === 'medium' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                        task.priority === 'low' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                      )}
+                    >
+                      {task.priority}
+                    </span>
                   )}
-                >
-                  {task.title}
-                </h3>
+                  {/* Recurrence Icon */}
+                  {task.recurrenceEnabled && (
+                    <span className="text-purple-500 dark:text-purple-400" title="Recurring task">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 01-4 4H3"/></svg>
+                    </span>
+                  )}
+                </div>
                 {task.description && (
                   <p
                     className={cn(
@@ -120,9 +141,35 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
                     {task.description}
                   </p>
                 )}
-                <p className="mt-2 text-xs text-gray-secondary/70">
-                  {formatRelativeTime(task.updatedAt)}
-                </p>
+                {/* Tags */}
+                {task.tags && task.tags.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {task.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-gray-100 text-gray-600 dark:bg-dark-200 dark:text-gray-400"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-secondary/70">
+                  <span>{formatRelativeTime(task.updatedAt)}</span>
+                  {/* Due Date */}
+                  {task.dueDate && (
+                    <span
+                      className={cn(
+                        'flex items-center gap-1',
+                        task.isOverdue && 'text-red-500 font-medium',
+                        !task.isOverdue && task.dueDate && new Date(task.dueDate).getTime() - Date.now() < 86400000 && 'text-yellow-600 dark:text-yellow-400',
+                      )}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {task.isOverdue ? 'Overdue' : new Date(task.dueDate).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Actions - Always visible on mobile, hover on desktop */}

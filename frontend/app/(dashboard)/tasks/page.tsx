@@ -23,6 +23,16 @@ export default function TasksPage() {
     editTask,
     fetchTasks,
     trackTaskView,
+    // Phase V: Search, filter, sort
+    searchQuery,
+    setSearchQuery,
+    priorityFilter,
+    setPriorityFilter,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    clearFilters,
   } = useTasksWithActivity();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -80,16 +90,23 @@ export default function TasksPage() {
       {/* Task Counters */}
       <TaskCounters counts={counts} className="mb-6" />
 
-      {/* Task Filters */}
-      {counts.total > 0 && (
-        <div className="mb-6">
-          <TaskFilters
-            currentFilter={filter}
-            onFilterChange={setFilter}
-            counts={counts}
-          />
-        </div>
-      )}
+      {/* Task Filters (Search + Status + Priority + Sort) */}
+      <div className="mb-6">
+        <TaskFilters
+          currentFilter={filter}
+          onFilterChange={setFilter}
+          counts={counts}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          priorityFilter={priorityFilter}
+          onPriorityFilterChange={setPriorityFilter}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+          onClearFilters={clearFilters}
+        />
+      </div>
 
       {/* Task List */}
       <TaskList

@@ -29,20 +29,27 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
     defaultValues: {
       title: task?.title || '',
       description: task?.description || '',
+      priority: task?.priority || 'none',
+      tags: task?.tags?.join(', ') || '',
+      due_date: task?.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
+      reminder_minutes_before: 15,
+      recurrence_pattern: task?.recurrencePattern || '',
     },
   });
 
-  // Focus title field on mount
   useEffect(() => {
     setFocus('title');
   }, [setFocus]);
 
-  // Reset form when task changes
   useEffect(() => {
     if (task) {
       reset({
         title: task.title,
         description: task.description || '',
+        priority: task.priority || 'none',
+        tags: task.tags?.join(', ') || '',
+        due_date: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
+        recurrence_pattern: task.recurrencePattern || '',
       });
     }
   }, [task, reset]);
@@ -70,12 +77,66 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
         placeholder="Add some details..."
         error={errors.description?.message}
         disabled={isLoading}
-        rows={4}
+        rows={3}
         className="text-base sm:text-sm"
         {...register('description')}
       />
 
-      {/* Actions - Stack on mobile, inline on desktop */}
+      {/* Priority & Tags row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Priority
+          </label>
+          <select
+            {...register('priority')}
+            disabled={isLoading}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          >
+            <option value="none">None</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <Input
+          label="Tags (comma separated)"
+          placeholder="work, urgent, personal"
+          disabled={isLoading}
+          className="text-base sm:text-sm"
+          {...register('tags')}
+        />
+      </div>
+
+      {/* Due Date & Recurrence row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label="Due Date (optional)"
+          type="datetime-local"
+          disabled={isLoading}
+          className="text-base sm:text-sm"
+          {...register('due_date')}
+        />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Recurrence
+          </label>
+          <select
+            {...register('recurrence_pattern')}
+            disabled={isLoading}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          >
+            <option value="">None</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Actions */}
       <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2 sm:pt-4">
         <Button
           type="button"
