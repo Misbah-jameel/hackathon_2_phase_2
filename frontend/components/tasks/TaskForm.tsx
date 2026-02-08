@@ -33,7 +33,7 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
       tags: task?.tags?.join(', ') || '',
       due_date: task?.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
       reminder_minutes_before: 15,
-      recurrence_pattern: task?.recurrencePattern || '',
+      recurrence_pattern: (task?.recurrencePattern as CreateTaskFormData['recurrence_pattern']) || '',
     },
   });
 
@@ -49,7 +49,7 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
         priority: task.priority || 'none',
         tags: task.tags?.join(', ') || '',
         due_date: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
-        recurrence_pattern: task.recurrencePattern || '',
+        recurrence_pattern: (task.recurrencePattern as CreateTaskFormData['recurrence_pattern']) || '',
       });
     }
   }, [task, reset]);
@@ -85,10 +85,11 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
       {/* Priority & Tags row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Priority
           </label>
           <select
+            id="priority"
             {...register('priority')}
             disabled={isLoading}
             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -120,10 +121,11 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="recurrence_pattern" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Recurrence
           </label>
           <select
+            id="recurrence_pattern"
             {...register('recurrence_pattern')}
             disabled={isLoading}
             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"

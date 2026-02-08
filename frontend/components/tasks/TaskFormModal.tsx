@@ -42,7 +42,7 @@ function formDataToInput(data: CreateTaskFormData): CreateTaskInput {
     input.reminder_minutes_before = data.reminder_minutes_before;
   }
 
-  if (data.recurrence_pattern && data.recurrence_pattern !== '') {
+  if (data.recurrence_pattern) {
     input.recurrence_pattern = data.recurrence_pattern;
   }
 
